@@ -1,0 +1,4 @@
+python-can==4.6.1
+pyserial>=3.5,<4
+typing_extensions>=4.10
+packaging>=24

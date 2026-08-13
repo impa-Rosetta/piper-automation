@@ -1,0 +1,9 @@
+{
+  "format": "piper_diy_gripper_timeline_v1",
+  "trajectory": "trajectory.csv",
+  "events": [
+    {"time_s": 1.0, "action": "close"},
+    {"time_s": 2.0, "action": "open"}
+  ],
+  "note": "Illustrative event structure only; no robot motion data is included."
+}

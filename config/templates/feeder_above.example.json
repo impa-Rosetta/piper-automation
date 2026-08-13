@@ -1,0 +1,5 @@
+{
+  "format": "piper_teach_home_v1",
+  "joint": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+  "note": "Replace this example by recording the real feeder-above anchor."
+}

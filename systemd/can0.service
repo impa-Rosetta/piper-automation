@@ -1,0 +1,13 @@
+[Unit]
+Description=Piper candleLight SocketCAN interface
+After=network.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStartPre=/sbin/modprobe gs_usb
+ExecStart=/bin/sh -c '/sbin/ip link set can0 down 2>/dev/null || true; /sbin/ip link set can0 type can bitrate 1000000; /sbin/ip link set can0 up'
+ExecStop=/sbin/ip link set can0 down
+
+[Install]
+WantedBy=multi-user.target

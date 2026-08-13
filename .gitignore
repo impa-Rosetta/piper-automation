@@ -1,0 +1,31 @@
+__pycache__/
+*.py[cod]
+.venv/
+.idea/
+.vscode/
+
+# Machine-specific connection and calibration data
+config/windows_remote_workbench.json
+teach/feeder_above.json
+teach/home.json
+teach/zero_home.json
+
+# Factory trajectories and measurements are intentionally private
+teach/production_tasks/*
+!teach/production_tasks/.gitkeep
+teach/trajectories/
+teach/gripper_timelines/
+records/*
+!records/full_status_logs/
+records/full_status_logs/*
+!records/full_status_logs/.gitkeep
+
+*.csv
+*.log
+*.tar.gz
+*.zip
+
+# Build artifacts
+*.egg-info/
+dist/
+build/

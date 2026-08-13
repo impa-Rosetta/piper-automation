@@ -1,0 +1,13 @@
+{
+  "host": "piper-pi",
+  "remote_root": "/home/piper/piper-automation",
+  "can_port": "can0",
+  "gripper_port": "/dev/piper_gripper",
+  "layer": 1,
+  "slot": 1,
+  "sequence_from": 1,
+  "sequence_to": 27,
+  "speed": 10,
+  "play_speed": 1.0,
+  "anchor_speed": 20
+}

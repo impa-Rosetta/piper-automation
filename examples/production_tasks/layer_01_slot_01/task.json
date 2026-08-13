@@ -1,0 +1,23 @@
+{
+  "format": "piper_field_task_v1",
+  "task_id": "layer_01_slot_01",
+  "status": "example_only",
+  "task_type": "rotor_placement",
+  "layer": 1,
+  "slot": 1,
+  "trajectory_file": "teach/production_tasks/layer_01_slot_01/trajectory.csv",
+  "gripper_timeline_file": "teach/production_tasks/layer_01_slot_01/gripper_timeline.json",
+  "recording": {
+    "sample_dt_s": 0.005,
+    "nominal_hz": 200
+  },
+  "replay": {
+    "speed_percent": 10,
+    "play_speed": 1.0,
+    "stream_dt_s": 0.005,
+    "clock": "recorded",
+    "event_sync": "actual",
+    "gripper_action_hold_s": 0.3,
+    "gripper_event_offset_s": 0.0
+  }
+}
