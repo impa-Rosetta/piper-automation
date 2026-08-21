@@ -252,6 +252,12 @@ class RemoteWorkbench(tk.Tk):
         ).grid(row=0, column=8, padx=(12, 5), sticky="ew")
         ttk.Button(
             connection,
+            text="首次配置免密 SSH",
+            style="Action.TButton",
+            command=self.configure_passwordless_ssh,
+        ).grid(row=1, column=8, padx=(12, 5), pady=(6, 0), sticky="ew")
+        ttk.Button(
+            connection,
             text="打开 SSH 终端",
             style="Action.TButton",
             command=self.open_shell,
@@ -872,17 +878,80 @@ class RemoteWorkbench(tk.Tk):
         except (OSError, ValueError) as exc:
             messagebox.showerror("无法启动 SSH", str(exc))
 
+    def configure_passwordless_ssh(self) -> None:
+        raw_host = self.host.get().strip()
+        if not raw_host:
+            messagebox.showerror("配置错误", "请先填写树莓派 IP 或主机名。")
+            return
+        if "@" in raw_host:
+            pi_user, pi_address = raw_host.split("@", 1)
+        else:
+            pi_user, pi_address = DEFAULT_PI_USER, raw_host
+        if not pi_user or not pi_address:
+            messagebox.showerror("配置错误", "SSH 主机格式应为 IP、主机名或 用户@主机。")
+            return
+        if not messagebox.askyesno(
+            "配置免密 SSH",
+            "将为当前 Windows 账户创建 SSH 密钥，并安装到树莓派。\n"
+            "新终端中只需输入一次树莓派 Linux 登录密码。\n\n"
+            f"目标：{pi_user}@{pi_address}\n确认继续吗？",
+        ):
+            return
+        script = PROJECT_ROOT / "scripts" / "configure_windows_workstation.ps1"
+        command = [
+            "powershell.exe",
+            "-NoExit",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-File",
+            str(script),
+            "-PiAddress",
+            pi_address,
+            "-PiUser",
+            pi_user,
+            "-Alias",
+            "piper-pi",
+            "-RemoteRoot",
+            self.remote_project(),
+        ]
+        try:
+            subprocess.Popen(
+                command,
+                cwd=PROJECT_ROOT,
+                creationflags=CREATE_NEW_CONSOLE,
+            )
+            self.log("已打开免密 SSH 配置终端；按提示输入一次树莓派密码。")
+        except OSError as exc:
+            messagebox.showerror("无法启动配置程序", str(exc))
+
     def check_remote(self) -> None:
         command = (
-            "echo '=== Raspberry Pi ==='; hostname; uname -m; "
-            "echo '=== CAN ==='; systemctl is-active can0.service; "
-            f"ip -details link show {shlex.quote(self.can_port.get())}; "
-            "echo '=== Gripper ==='; "
-            f"ls -l {shlex.quote(self.gripper_port.get())}; "
-            "echo '=== Piper feedback ==='; "
+            "check_rc=0; "
+            "echo '=== SSH target ==='; "
+            "printf 'user='; whoami; printf 'host='; hostname; "
+            "printf 'ip='; hostname -I; "
+            "echo '=== Project ==='; "
+            + self.remote_prefix()
+            + "git rev-parse --short HEAD 2>/dev/null || check_rc=1; "
+            "echo '=== USB-CAN ==='; "
+            "lsusb | grep -E '1d50:606f|CAN|OpenMoko' || check_rc=1; "
+            "echo '=== CAN service/interface ==='; "
+            "systemctl is-active can0.service || check_rc=1; "
+            f"ip -details -statistics link show {shlex.quote(self.can_port.get())} "
+            "|| check_rc=1; "
+            "echo '=== Gripper ==='; id; "
+            f"ls -l {shlex.quote(self.gripper_port.get())} || check_rc=1; "
+            f"test -r {shlex.quote(self.gripper_port.get())} "
+            f"-a -w {shlex.quote(self.gripper_port.get())} "
+            "&& echo 'gripper_access=read-write' "
+            "|| { echo 'gripper_access=FAILED'; check_rc=1; }; "
+            "echo '=== Piper feedback (3 s) ==='; "
             + self.remote_prefix()
             + "timeout 3 python -u scripts/read_status.py "
-            f"--can-port {shlex.quote(self.can_port.get())}"
+            f"--can-port {shlex.quote(self.can_port.get())}; "
+            "feedback_rc=$?; "
+            "if [ $feedback_rc -ne 0 ] && [ $feedback_rc -ne 124 ]; "
+            "then check_rc=1; fi; exit $check_rc"
         )
         self.run_capture(command, "连接与设备检查")
 

@@ -115,14 +115,11 @@ cd piper-automation
 
 路径可以自行更换，但尽量不要放在 OneDrive 同步目录。
 
-### 4.2 配置 SSH 密钥
+### 4.2 配置 SSH 密钥（每台 Windows 电脑各做一次）
 
-```powershell
-ssh-keygen -t ed25519 -C "piper-operator"
-Get-Content $env:USERPROFILE\.ssh\id_ed25519.pub | ssh <PI_USER>@<PI_IP> "umask 077; mkdir -p ~/.ssh; cat >> ~/.ssh/authorized_keys"
-```
-
-然后运行项目辅助脚本，它会写入 SSH 别名和工作台配置，但不会保存密码：
+运行项目辅助脚本。它会创建当前 Windows 账户自己的 SSH 密钥、写入 SSH
+别名，并把公钥安装到树莓派。执行过程中只需输入一次树莓派 Linux 登录密码；
+此后工作台的 Home、给料上方、机械臂和夹爪按钮均不再询问密码：
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\configure_windows_workstation.ps1 `
@@ -136,6 +133,10 @@ powershell -ExecutionPolicy Bypass -File .\scripts\configure_windows_workstation
 ```powershell
 ssh piper-pi "hostname; uname -m"
 ```
+
+也可以在 Windows 工作台顶部填写树莓派 IP 后，点击“首次配置免密 SSH”。
+注意：换一台 Windows 电脑时必须重新配置一次，因为 SSH 私钥属于具体的 Windows
+账户，不应从上一位操作员电脑直接复制。
 
 ## 5. 树莓派获取和安装项目
 

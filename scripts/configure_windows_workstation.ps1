@@ -32,6 +32,11 @@ if (-not (Test-Path $keyPath)) {
     }
 }
 
+$publicKeyPath = "$keyPath.pub"
+if (-not (Test-Path $publicKeyPath)) {
+    throw "SSH public key was not found: $publicKeyPath"
+}
+
 $begin = "# BEGIN PIPER-AUTOMATION"
 $end = "# END PIPER-AUTOMATION"
 $existing = if (Test-Path $sshConfig) { Get-Content -Raw $sshConfig } else { "" }
@@ -71,6 +76,27 @@ $jsonPath = Join-Path $configDirectory "windows_remote_workbench.json"
 [IO.File]::WriteAllText($jsonPath, ($workbenchConfig | ConvertTo-Json), $utf8NoBom)
 
 Write-Host "SSH alias and Windows workbench configuration saved."
-Write-Host "If the public key has not been installed on the Pi, run:"
-Write-Host "  Get-Content `$env:USERPROFILE\.ssh\id_ed25519.pub | ssh $PiUser@$PiAddress `"umask 077; mkdir -p ~/.ssh; cat >> ~/.ssh/authorized_keys`""
-Write-Host "Then test: ssh $Alias `"hostname; uname -m`""
+Write-Host "Installing this Windows account's public key on the Raspberry Pi ..."
+Write-Host "Enter the Raspberry Pi Linux password once when prompted."
+
+$publicKey = (Get-Content -Raw $publicKeyPath).Trim()
+$installCommand = @'
+umask 077
+mkdir -p ~/.ssh
+touch ~/.ssh/authorized_keys
+key=$(cat)
+grep -qxF "$key" ~/.ssh/authorized_keys || printf '%s\n' "$key" >> ~/.ssh/authorized_keys
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/authorized_keys
+'@
+$publicKey | & ssh "$PiUser@$PiAddress" $installCommand
+if ($LASTEXITCODE -ne 0) {
+    throw "Public-key installation failed with exit code $LASTEXITCODE"
+}
+
+Write-Host "Testing passwordless SSH ..."
+& ssh -o BatchMode=yes $Alias "hostname; whoami; uname -m"
+if ($LASTEXITCODE -ne 0) {
+    throw "Passwordless SSH test failed with exit code $LASTEXITCODE"
+}
+Write-Host "Passwordless SSH is ready. Reopen the Piper workbench."
