@@ -5,10 +5,21 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from teach.run_task_sequence import load_task, preflight
+from teach.run_task_sequence import load_task, preflight, production_cycles
 
 
 class TaskFileTests(unittest.TestCase):
+    def test_finite_production_cycles(self) -> None:
+        self.assertEqual(list(production_cycles(3, False)), [1, 2, 3])
+
+    def test_infinite_production_cycles(self) -> None:
+        cycles = iter(production_cycles(1, True))
+        self.assertEqual([next(cycles) for _ in range(4)], [1, 2, 3, 4])
+
+    def test_production_cycles_rejects_zero(self) -> None:
+        with self.assertRaises(ValueError):
+            production_cycles(0, False)
+
     def test_load_and_preflight_minimal_task(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

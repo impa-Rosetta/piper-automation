@@ -160,6 +160,12 @@ class RemoteWorkbench(tk.Tk):
         self.slot = tk.IntVar(value=int(saved.get("slot", 1)))
         self.sequence_from = tk.IntVar(value=int(saved.get("sequence_from", 1)))
         self.sequence_to = tk.IntVar(value=int(saved.get("sequence_to", 4)))
+        self.production_cycles = tk.IntVar(
+            value=max(1, int(saved.get("production_cycles", 1)))
+        )
+        self.production_infinite = tk.BooleanVar(
+            value=bool(saved.get("production_infinite", False))
+        )
         self.speed = tk.IntVar(value=int(saved.get("speed", 10)))
         self.play_speed = tk.DoubleVar(value=float(saved.get("play_speed", 1.0)))
         self.anchor_speed = tk.IntVar(value=int(saved.get("anchor_speed", 30)))
@@ -196,6 +202,8 @@ class RemoteWorkbench(tk.Tk):
             "slot": self.slot.get(),
             "sequence_from": self.sequence_from.get(),
             "sequence_to": self.sequence_to.get(),
+            "production_cycles": self.production_cycles.get(),
+            "production_infinite": self.production_infinite.get(),
             "speed": self.speed.get(),
             "play_speed": self.play_speed.get(),
             "anchor_speed": self.anchor_speed.get(),
@@ -697,6 +705,22 @@ class RemoteWorkbench(tk.Tk):
             ttk.Spinbox(
                 sequence, from_=1, to=upper, textvariable=variable, width=5
             ).pack(side="left", padx=(4, 10))
+
+        repeat = ttk.Frame(production_tab, style="Panel.TFrame")
+        repeat.pack(fill="x", pady=(0, 8))
+        ttk.Label(repeat, text="循环次数", style="Panel.TLabel").pack(side="left")
+        ttk.Spinbox(
+            repeat,
+            from_=1,
+            to=999999,
+            textvariable=self.production_cycles,
+            width=8,
+        ).pack(side="left", padx=(4, 16))
+        ttk.Checkbutton(
+            repeat,
+            text="无限循环（S/Q 或 Ctrl+C 停止）",
+            variable=self.production_infinite,
+        ).pack(side="left")
 
         settings = ttk.Frame(production_tab, style="Panel.TFrame")
         settings.pack(fill="x", pady=(0, 10))
@@ -1363,11 +1387,17 @@ class RemoteWorkbench(tk.Tk):
         layer = int(self.layer.get())
         start = int(self.sequence_from.get())
         end = int(self.sequence_to.get())
+        cycles = int(self.production_cycles.get())
+        infinite = bool(self.production_infinite.get())
         if layer < 1 or not (1 <= start <= end <= 27):
             messagebox.showerror("参数错误", "请检查层号及起止孔位。")
             return
+        if cycles < 1:
+            messagebox.showerror("参数错误", "循环次数必须至少为 1。")
+            return
+        cycle_text = "无限循环" if infinite else f"循环 {cycles} 次"
         if not dry_run and not self.motion_confirm(
-            f"将连续执行第 {layer} 层孔位 {start}～{end}。\n"
+            f"将连续执行第 {layer} 层孔位 {start}～{end}，{cycle_text}。\n"
             "程序只在开始时前往一次给料上方，随后保持 CAN 和夹爪串口连接。"
         ):
             return
@@ -1389,12 +1419,18 @@ class RemoteWorkbench(tk.Tk):
             "--anchor-limit",
             0.035,
         ]
+        if infinite:
+            arguments.append("--infinite")
+        else:
+            arguments.extend(("--cycles", cycles))
         if dry_run:
             arguments.append("--dry-run")
         command = self.remote_python("teach.run_task_sequence", *arguments)
         self.run_terminal(
             command,
-            "连续任务检查" if dry_run else f"连续生产 L{layer:02d}",
+            "连续任务检查"
+            if dry_run
+            else f"连续生产 L{layer:02d}（{cycle_text}）",
         )
 
     def motion_confirm(self, description: str) -> bool:

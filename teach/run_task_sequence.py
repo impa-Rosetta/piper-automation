@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import itertools
 import json
 import math
 import subprocess
@@ -13,7 +14,7 @@ import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterable
 
 from teach.production_stream import (
     PreparedTask,
@@ -24,6 +25,15 @@ from teach.production_stream import (
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_TASK_ROOT = PROJECT_ROOT / "teach" / "production_tasks"
+
+
+def production_cycles(cycles: int, infinite: bool) -> Iterable[int]:
+    """Yield one-based production cycle numbers."""
+    if cycles < 1:
+        raise ValueError("production cycles must be at least 1")
+    if infinite:
+        return itertools.count(1)
+    return range(1, cycles + 1)
 
 
 @dataclass(frozen=True)
@@ -434,6 +444,17 @@ def main() -> int:
     )
     parser.add_argument("--between-task-delay", type=float, default=0.20)
     parser.add_argument(
+        "--cycles",
+        type=int,
+        default=1,
+        help="Number of complete task-sequence cycles to run (default: 1).",
+    )
+    parser.add_argument(
+        "--infinite",
+        action="store_true",
+        help="Repeat the complete task sequence until the operator stops it.",
+    )
+    parser.add_argument(
         "--no-auto-trim",
         action="store_true",
         help="Keep every recorded idle sample instead of trimming endpoint dwell.",
@@ -487,6 +508,8 @@ def main() -> int:
         parser.error("trim settle times cannot be negative")
     if args.between_task_delay < 0:
         parser.error("--between-task-delay cannot be negative")
+    if args.cycles < 1:
+        parser.error("--cycles must be at least 1")
     if args.event_position_tolerance <= 0 or args.event_wait_timeout <= 0:
         parser.error("event position tolerance and timeout must be positive")
 
@@ -521,6 +544,12 @@ def main() -> int:
         return 2
 
     print_report(tasks, report)
+    cycle_label = (
+        "infinite (stop with S/Q or Ctrl+C)"
+        if args.infinite
+        else str(args.cycles)
+    )
+    print(f"Production cycles: {cycle_label}")
     print("Production stream preparation:")
     for item in prepared:
         print(
@@ -573,10 +602,13 @@ def main() -> int:
     if anchor_path:
         print(
             "The arm will move to the saved feeder-above point once, then run "
-            "every task continuously."
+            "every task continuously. It will not return Home between cycles."
         )
     else:
-        print("The arm will return to zero Home once, then run every task continuously.")
+        print(
+            "The arm will return to zero Home once, then run every task "
+            "continuously. It will not return Home between cycles."
+        )
     print("Clear the workspace and keep the physical E-stop ready.")
     if not args.yes and input("Type RUN to start the complete sequence: ").strip() != "RUN":
         print("Cancelled.")
@@ -590,12 +622,19 @@ def main() -> int:
             print("\n[START] Moving to zero Home once ...")
             go_zero_home(args)
         if args.legacy_subprocess:
-            for index, task in enumerate(tasks, start=1):
-                print(f"\n[START {index}/{len(tasks)}] {task.task_id}")
-                replay_task(task, args)
-                print(f"[DONE  {index}/{len(tasks)}] {task.task_id}")
-                if index < len(tasks) and args.between_task_delay > 0:
-                    time.sleep(args.between_task_delay)
+            for cycle in production_cycles(args.cycles, args.infinite):
+                cycle_total = "infinite" if args.infinite else str(args.cycles)
+                print(f"\n[CYCLE {cycle}/{cycle_total}] START (legacy mode)")
+                for index, task in enumerate(tasks, start=1):
+                    print(
+                        f"\n[START cycle={cycle} task={index}/{len(tasks)}] "
+                        f"{task.task_id}"
+                    )
+                    replay_task(task, args)
+                    print(f"[DONE] {task.task_id}")
+                    if args.between_task_delay > 0:
+                        time.sleep(args.between_task_delay)
+                print(f"[CYCLE {cycle}/{cycle_total}] DONE")
         else:
             stream = ProductionStream(
                 can_port=args.can_port,
@@ -617,11 +656,25 @@ def main() -> int:
             )
             with stream:
                 stream.initialize_motion(prepared[0].settings.speed)
-                for index, task in enumerate(prepared, start=1):
-                    print(f"\n[START {index}/{len(prepared)}] {task.task_id}")
-                    if not stream.replay(task, first_task=index == 1):
-                        print("Sequence stopped by operator.")
-                        return 1
+                first_replay = True
+                completed_cycles = 0
+                for cycle in production_cycles(args.cycles, args.infinite):
+                    cycle_total = "infinite" if args.infinite else str(args.cycles)
+                    print(f"\n[CYCLE {cycle}/{cycle_total}] START")
+                    for index, task in enumerate(prepared, start=1):
+                        print(
+                            f"\n[START cycle={cycle} task={index}/{len(prepared)}] "
+                            f"{task.task_id}"
+                        )
+                        if not stream.replay(task, first_task=first_replay):
+                            print(
+                                f"Sequence stopped by operator after "
+                                f"{completed_cycles} complete cycle(s)."
+                            )
+                            return 1
+                        first_replay = False
+                    completed_cycles = cycle
+                    print(f"[CYCLE {cycle}/{cycle_total}] DONE")
     except KeyboardInterrupt:
         print("\nSTOP: Ctrl+C received. Use the physical E-stop if motion continues.")
         return 130
@@ -634,7 +687,7 @@ def main() -> int:
         print("Sequence stopped; the next task was not started.", file=sys.stderr)
         return 4
 
-    print("\nAll tasks completed successfully.")
+    print(f"\nAll tasks completed successfully for {args.cycles} cycle(s).")
     return 0
 
 
