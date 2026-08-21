@@ -17,7 +17,8 @@ Ubuntu 22.04 ARM64 的树莓派开始，完成代码获取、树莓派配网、S
 | STM32 夹爪控制器 | 接收 `open` / `close` 串口命令 | 当前协议不保证提供电流反馈 |
 
 建议树莓派主机名使用 `piper-pi`，项目目录使用
-`/home/<用户名>/piper-automation`。文档中的 `<PI_USER>`、`<PI_IP>` 和
+`/home/<用户名>/piper_robot_project`。GitHub 仓库名仍为 `piper-automation`，二者不要
+混淆。文档中的 `<PI_USER>`、`<PI_IP>` 和
 `<REMOTE_ROOT>` 都必须替换为现场实际值。
 
 ## 2. 交接前必须保存的内容
@@ -76,7 +77,7 @@ ssh <PI_USER>@<PI_IP>
 项目提供交互式脚本，密码不会出现在命令历史中：
 
 ```bash
-cd ~/piper-automation
+cd ~/piper_robot_project
 bash scripts/configure_pi_wifi.sh --ssid "新的热点名称"
 ```
 
@@ -125,7 +126,7 @@ cd piper-automation
 powershell -ExecutionPolicy Bypass -File .\scripts\configure_windows_workstation.ps1 `
   -PiAddress <PI_IP> `
   -PiUser <PI_USER> `
-  -RemoteRoot /home/<PI_USER>/piper-automation
+  -RemoteRoot /home/<PI_USER>/piper_robot_project
 ```
 
 验证：
@@ -150,8 +151,8 @@ ssh piper-pi
 
 ```bash
 cd ~
-git clone https://github.com/impa-Rosetta/piper-automation.git
-cd piper-automation
+git clone https://github.com/impa-Rosetta/piper-automation.git piper_robot_project
+cd piper_robot_project
 bash scripts/setup_raspberry_pi.sh
 sudo usermod -aG dialout "$USER"
 sudo reboot
@@ -169,7 +170,7 @@ sudo reboot
 重启后重新 SSH，并激活环境：
 
 ```bash
-cd ~/piper-automation
+cd ~/piper_robot_project
 source ~/.venvs/piper_robot_project_api/bin/activate
 ```
 
@@ -249,7 +250,7 @@ start_piper_windows_workbench.bat
 
 - 主机：`piper-pi`（工作台会明确使用默认 Linux 用户 `piper`，等价于
   `piper@piper-pi`）；如果树莓派使用其他账号，填写 `用户名@主机名或IP`；
-- 远程项目：`/home/<PI_USER>/piper-automation`；
+- 远程项目：`/home/<PI_USER>/piper_robot_project`；
 - CAN：`can0`；
 - 夹爪：`/dev/piper_gripper`。
 
@@ -257,7 +258,9 @@ start_piper_windows_workbench.bat
 先更新项目，再重新打开工作台。正确提示应为 `piper@piper-pi's password`；这里要求
 输入的是树莓派 Linux 账号密码，不是热点密码。
 
-先点击“连接与设备检查”。检查通过后再进行：
+先点击“连接与设备检查”。使用同一块已录制现场数据的树莓派时，再点击
+“从树莓派拉回现场数据”，把未公开提交的工厂轨迹同步到这台 Windows 电脑。确认任务
+列表出现后再进行：
 
 1. **同步程序到树莓派**；
 2. **录制公共给料上方点**；
@@ -275,7 +278,7 @@ start_piper_windows_workbench.bat
 把内部交接的现场数据压缩包复制到树莓派项目目录之外，例如 `~/backup/`，然后：
 
 ```bash
-cd ~/piper-automation
+cd ~/piper_robot_project
 bash scripts/restore_site_data.sh ~/backup/piper_site_data_YYYYMMDD_HHMMSS.tar.gz
 ```
 

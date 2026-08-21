@@ -16,7 +16,7 @@
 在 Windows 工作台先执行“连接与设备检查”。树莓派侧等价命令：
 
 ```bash
-cd ~/piper-automation
+cd ~/piper_robot_project
 source ~/.venvs/piper_robot_project_api/bin/activate
 sudo systemctl restart can0.service
 ip -details -statistics link show can0

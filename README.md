@@ -83,11 +83,14 @@ instead of relying on the abbreviated commands below:
 Target: Raspberry Pi 4, Ubuntu 22.04 ARM64, Python 3.10.
 
 ```bash
-git clone https://github.com/impa-Rosetta/piper-automation.git
-cd piper-automation
+git clone https://github.com/impa-Rosetta/piper-automation.git piper_robot_project
+cd piper_robot_project
 bash scripts/setup_raspberry_pi.sh
 sudo systemctl start can0.service
 ```
+
+The GitHub repository is named `piper-automation`, while the standardized
+Raspberry Pi deployment directory is `/home/piper/piper_robot_project`.
 
 Verify devices:
 

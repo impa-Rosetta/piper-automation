@@ -78,11 +78,14 @@ teach/production_tasks/layer_01_slot_01/
 已验证目标环境：树莓派 4、Ubuntu 22.04 ARM64、Python 3.10。
 
 ```bash
-git clone https://github.com/impa-Rosetta/piper-automation.git
-cd piper-automation
+git clone https://github.com/impa-Rosetta/piper-automation.git piper_robot_project
+cd piper_robot_project
 bash scripts/setup_raspberry_pi.sh
 sudo systemctl start can0.service
 ```
+
+GitHub 仓库名是 `piper-automation`，但树莓派统一部署目录是
+`/home/piper/piper_robot_project`，请保留上面命令末尾的目录参数。
 
 检查设备：
 

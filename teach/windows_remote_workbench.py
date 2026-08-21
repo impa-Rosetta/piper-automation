@@ -40,8 +40,17 @@ SYNC_ROOTS = (
     "scripts",
     "gripper",
     "config",
+    "docs",
+    "examples",
+    "systemd",
+    "tests",
+    "udev",
 )
 SYNC_FILES = (
+    ".gitattributes",
+    ".gitignore",
+    "CONTRIBUTING.md",
+    "LICENSE",
     "requirements.txt",
     "README.md",
     "README.zh-CN.md",
@@ -60,6 +69,9 @@ SYNC_EXCLUDED_SUFFIXES = {
     ".mkv",
     ".mp4",
     ".png",
+}
+SYNC_EXCLUDED_RELATIVE = {
+    "config/windows_remote_workbench.json",
 }
 PULL_PATHS = (
     "teach/production_tasks",
@@ -138,7 +150,7 @@ class RemoteWorkbench(tk.Tk):
         saved = self.load_config()
         self.host = tk.StringVar(value=saved.get("host", "piper-pi"))
         self.remote_root = tk.StringVar(
-            value=saved.get("remote_root", "/home/piper/piper-automation")
+            value=saved.get("remote_root", "/home/piper/piper_robot_project")
         )
         self.can_port = tk.StringVar(value=saved.get("can_port", "can0"))
         self.gripper_port = tk.StringVar(
@@ -956,7 +968,8 @@ class RemoteWorkbench(tk.Tk):
             "printf 'ip='; hostname -I; "
             "echo '=== Project ==='; "
             + self.remote_prefix()
-            + "git rev-parse --short HEAD 2>/dev/null || check_rc=1; "
+            + "git rev-parse --short HEAD 2>/dev/null "
+            + "|| echo 'deployment=archive/no-git (supported)'; "
             "echo '=== USB-CAN ==='; "
             "lsusb | grep -E '1d50:606f|CAN|OpenMoko' || check_rc=1; "
             "echo '=== CAN service/interface ==='; "
@@ -1401,6 +1414,8 @@ class RemoteWorkbench(tk.Tk):
                     continue
                 relative = path.relative_to(PROJECT_ROOT)
                 if any(part in SYNC_EXCLUDED_PARTS for part in relative.parts):
+                    continue
+                if relative.as_posix() in SYNC_EXCLUDED_RELATIVE:
                     continue
                 if path.suffix.lower() in {
                     ".pyc",

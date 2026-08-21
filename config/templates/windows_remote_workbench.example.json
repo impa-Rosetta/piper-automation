@@ -1,6 +1,6 @@
 {
   "host": "piper-pi",
-  "remote_root": "/home/piper/piper-automation",
+  "remote_root": "/home/piper/piper_robot_project",
   "can_port": "can0",
   "gripper_port": "/dev/piper_gripper",
   "layer": 1,

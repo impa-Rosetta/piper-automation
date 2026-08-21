@@ -38,7 +38,8 @@ ip -br link
 ```
 
 USB 看不到：检查供电、线缆和 USB 接口。USB 能看到但 `can0` 不存在：检查 `gs_usb`
-驱动和 `dmesg`。
+驱动和 `dmesg`。`can0.service` 会等待 USB-CAN 出现并自动重试；插入适配器后也可以手动
+执行 `sudo systemctl restart can0.service` 立即恢复。
 
 ## `can0` 存在但 DOWN
 
@@ -80,7 +81,7 @@ sudo usermod -aG dialout "$USER"
 ## 工作台提示模块不存在
 
 ```bash
-cd ~/piper-automation
+cd ~/piper_robot_project
 source ~/.venvs/piper_robot_project_api/bin/activate
 python -c "import piper_sdk; print(piper_sdk.__file__); print('Piper' in dir(piper_sdk))"
 ```

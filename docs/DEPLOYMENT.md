@@ -15,7 +15,7 @@ workflow, and acceptance checklist, read
 ## Raspberry Pi setup
 
 ```bash
-cd ~/piper-automation
+cd ~/piper_robot_project
 bash scripts/setup_raspberry_pi.sh
 sudo systemctl start can0.service
 sudo usermod -aG dialout "$USER"

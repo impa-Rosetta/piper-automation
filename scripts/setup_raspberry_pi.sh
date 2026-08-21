@@ -40,6 +40,7 @@ if "Piper" not in dir(piper_sdk):
     raise SystemExit("Installed piper_sdk has no high-level Piper class")
 PY
 
+sudo install -m 0755 "$PROJECT_ROOT/scripts/start_can0.sh" /usr/local/sbin/piper-can0-up
 sudo install -m 0644 "$PROJECT_ROOT/systemd/can0.service" /etc/systemd/system/can0.service
 sudo install -m 0644 "$PROJECT_ROOT/udev/99-piper-gripper.rules" /etc/udev/rules.d/99-piper-gripper.rules
 sudo systemctl daemon-reload

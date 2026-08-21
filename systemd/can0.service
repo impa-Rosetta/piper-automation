@@ -1,13 +1,16 @@
 [Unit]
-Description=Piper candleLight SocketCAN interface
-After=network.target
+Description=Piper SocketCAN can0 at 1Mbps
+After=systemd-udev-settle.service
+Wants=systemd-udev-settle.service
+StartLimitIntervalSec=0
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStartPre=/sbin/modprobe gs_usb
-ExecStart=/bin/sh -c '/sbin/ip link set can0 down 2>/dev/null || true; /sbin/ip link set can0 type can bitrate 1000000; /sbin/ip link set can0 up'
+ExecStart=/usr/local/sbin/piper-can0-up
 ExecStop=/sbin/ip link set can0 down
+Restart=on-failure
+RestartSec=3
 
 [Install]
 WantedBy=multi-user.target

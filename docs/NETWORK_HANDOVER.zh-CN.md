@@ -34,7 +34,7 @@ sudo netplan get
 项目脚本会自动优先使用 NetworkManager；没有 `nmcli` 时使用 Netplan：
 
 ```bash
-cd ~/piper-automation
+cd ~/piper_robot_project
 bash scripts/configure_pi_wifi.sh --ssid "NEW_SSID"
 ```
 
@@ -78,7 +78,7 @@ ssh piper-pi "hostname; hostname -I"
 ```bash
 hostname
 ip -br link
-cd ~/piper-automation
+cd ~/piper_robot_project
 bash scripts/configure_pi_wifi.sh --ssid "NEW_SSID"
 hostname -I
 ```
@@ -90,7 +90,7 @@ hostname -I
 Windows 默认不能直接可靠编辑 Ubuntu 的 ext4 根分区。推荐按以下顺序：
 
 1. 优先借用网线、micro-HDMI 显示器和 USB 键盘；
-2. 或把 TF 卡挂载到另一台 Linux 电脑，备份 `/home/<PI_USER>/piper-automation`；
+2. 或把 TF 卡挂载到另一台 Linux 电脑，备份 `/home/<PI_USER>/piper_robot_project`；
 3. 最后才考虑重新烧录；
 4. 重装前必须确认已备份 `teach/production_tasks` 和锚点文件。
 

@@ -10,7 +10,7 @@ param(
 $ErrorActionPreference = "Stop"
 $ProjectRoot = Split-Path -Parent $PSScriptRoot
 if (-not $RemoteRoot) {
-    $RemoteRoot = "/home/$PiUser/piper-automation"
+    $RemoteRoot = "/home/$PiUser/piper_robot_project"
 }
 
 foreach ($command in @("git", "python", "ssh", "scp")) {
