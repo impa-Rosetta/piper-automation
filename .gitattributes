@@ -1,0 +1,11 @@
+* text=auto
+
+# Files executed on Raspberry Pi must keep Unix line endings even when the
+# repository is prepared and synchronized from Windows.
+*.sh text eol=lf
+*.service text eol=lf
+*.rules text eol=lf
+*.py text eol=lf
+
+*.bat text eol=crlf
+*.ps1 text eol=crlf

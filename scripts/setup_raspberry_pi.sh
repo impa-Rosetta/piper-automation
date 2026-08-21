@@ -5,7 +5,14 @@ PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 VENV="${PIPER_VENV:-$HOME/.venvs/piper_robot_project_api}"
 
 sudo apt-get update
-sudo apt-get install -y can-utils git python3-venv python3-tk
+sudo apt-get install -y \
+  can-utils \
+  git \
+  openssh-server \
+  python3-venv \
+  python3-tk \
+  usbutils \
+  wpasupplicant
 
 python3 -m venv "$VENV"
 source "$VENV/bin/activate"
@@ -37,6 +44,8 @@ sudo install -m 0644 "$PROJECT_ROOT/systemd/can0.service" /etc/systemd/system/ca
 sudo install -m 0644 "$PROJECT_ROOT/udev/99-piper-gripper.rules" /etc/udev/rules.d/99-piper-gripper.rules
 sudo systemctl daemon-reload
 sudo systemctl enable can0.service
+sudo systemctl enable --now ssh
+sudo usermod -aG dialout "$USER"
 sudo udevadm control --reload-rules
 sudo udevadm trigger
 
@@ -44,3 +53,4 @@ echo "Setup complete. Reconnect the CAN adapter and STM32 gripper, then run:"
 echo "  sudo systemctl start can0.service"
 echo "  ip -details link show can0"
 echo "  ls -l /dev/piper_gripper"
+echo "Log out and back in once so the dialout group membership takes effect."

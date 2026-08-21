@@ -70,6 +70,14 @@ time.
 
 ## Quick Start
 
+For a first installation or operator handoff, use the detailed field guides
+instead of relying on the abbreviated commands below:
+
+- [Zero-to-production handoff (Chinese)](docs/GETTING_STARTED.zh-CN.md)
+- [Raspberry Pi network handoff (Chinese)](docs/NETWORK_HANDOVER.zh-CN.md)
+- [Trajectory-only field runbook (Chinese)](docs/FIELD_RUNBOOK.zh-CN.md)
+- [Troubleshooting (Chinese)](docs/TROUBLESHOOTING.zh-CN.md)
+
 ### 1. Raspberry Pi
 
 Target: Raspberry Pi 4, Ubuntu 22.04 ARM64, Python 3.10.
@@ -160,6 +168,13 @@ This is research and integration software, not a safety-rated robot controller.
 Software stop is not a substitute for a physical emergency stop, guarding,
 risk assessment, payload verification, or operator training. Never run two
 processes against the same CAN interface.
+
+## Site-data handoff
+
+Factory trajectories are intentionally excluded from GitHub. Before changing
+operators or controllers, run `bash scripts/export_site_data.sh` on the Pi and
+store the resulting archive on two independent internal media. Restore with
+`scripts/restore_site_data.sh`, then repeat no-load low-speed validation.
 
 ## Project Scope
 

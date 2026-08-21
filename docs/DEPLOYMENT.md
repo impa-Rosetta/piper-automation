@@ -1,5 +1,9 @@
 # Deployment / 部署
 
+For a complete first-time installation, network handoff, Windows setup, field
+workflow, and acceptance checklist, read
+[`GETTING_STARTED.zh-CN.md`](GETTING_STARTED.zh-CN.md).
+
 ## Hardware
 
 - AgileX Piper arm

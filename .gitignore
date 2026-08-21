@@ -24,6 +24,7 @@ records/full_status_logs/*
 *.log
 *.tar.gz
 *.zip
+backups/
 
 # Build artifacts
 *.egg-info/

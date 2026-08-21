@@ -65,6 +65,14 @@ teach/production_tasks/layer_01_slot_01/
 
 ## 快速开始
 
+第一次接手项目请不要只执行下面的简版命令。完整的零基础交接、换热点、SSH、硬件接线、
+轨迹恢复和验收步骤见：
+
+- [从零部署与交接教程](docs/GETTING_STARTED.zh-CN.md)
+- [树莓派换热点与网络交接](docs/NETWORK_HANDOVER.zh-CN.md)
+- [纯轨迹方案现场操作手册](docs/FIELD_RUNBOOK.zh-CN.md)
+- [现场故障排查](docs/TROUBLESHOOTING.zh-CN.md)
+
 ### 1. 树莓派部署
 
 已验证目标环境：树莓派 4、Ubuntu 22.04 ARM64、Python 3.10。
@@ -146,6 +154,17 @@ python -m compileall -q teach scripts gripper
 
 本项目是科研与工程集成软件，不是安全等级控制器。软件停止不能替代物理急停、
 安全围栏、风险评估、负载验证和操作员培训。同一时间禁止多个进程控制同一 CAN。
+
+## 现场数据交接
+
+真实轨迹不会进入公开仓库。离场或换机前在树莓派执行：
+
+```bash
+bash scripts/export_site_data.sh
+```
+
+把生成的压缩包和 SHA-256 文件保存到两个独立的内部介质。恢复使用
+`scripts/restore_site_data.sh`，恢复后必须重新低速验证。
 
 ## 项目边界
 
