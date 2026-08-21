@@ -179,7 +179,12 @@ git pull
 
 ### SSH 每次要求密码
 
-重新运行 `configure_windows_workstation.ps1`。不要把上一位同事的私钥复制到新电脑。
+先执行 `git pull`，再重新运行 `configure_windows_workstation.ps1`。若旧版曾显示
+`octal number out of range` 或把公钥内容当成文件名，这是旧脚本的 CRLF 兼容问题；
+新版会以单行 Base64 方式安装公钥。不要把上一位同事的私钥复制到新电脑。
+
+若同事使用的是名为 `piper-automation-main` 的 GitHub ZIP 解压目录，不能在其中执行
+`git pull`；应重新下载最新 ZIP，或改用 `git clone` 获取可持续更新的工作副本。
 
 ### `can0` 不存在
 

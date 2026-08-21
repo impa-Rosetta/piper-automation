@@ -13,7 +13,7 @@ if (-not $RemoteRoot) {
     $RemoteRoot = "/home/$PiUser/piper_robot_project"
 }
 
-foreach ($command in @("git", "python", "ssh", "scp")) {
+foreach ($command in @("git", "python", "ssh", "scp", "ssh-keygen")) {
     if (-not (Get-Command $command -ErrorAction SilentlyContinue)) {
         throw "Required command '$command' was not found in PATH."
     }
@@ -26,9 +26,16 @@ New-Item -ItemType Directory -Force -Path $sshDirectory | Out-Null
 
 if (-not (Test-Path $keyPath)) {
     Write-Host "No SSH key found. Creating $keyPath ..."
-    & ssh-keygen @("-t", "ed25519", "-f", $keyPath, "-N", "", "-C", "piper-operator")
-    if ($LASTEXITCODE -ne 0) {
-        throw "ssh-keygen failed with exit code $LASTEXITCODE"
+    $sshKeygenPath = (Get-Command ssh-keygen).Source
+    $sshKeygenArguments = "-q -t ed25519 -f `"$keyPath`" -N `"`" -C `"piper-operator`""
+    $keygenProcess = Start-Process `
+        -FilePath $sshKeygenPath `
+        -ArgumentList $sshKeygenArguments `
+        -Wait `
+        -PassThru `
+        -NoNewWindow
+    if ($keygenProcess.ExitCode -ne 0) {
+        throw "ssh-keygen failed with exit code $($keygenProcess.ExitCode)"
     }
 }
 
@@ -80,23 +87,29 @@ Write-Host "Installing this Windows account's public key on the Raspberry Pi ...
 Write-Host "Enter the Raspberry Pi Linux password once when prompted."
 
 $publicKey = (Get-Content -Raw $publicKeyPath).Trim()
-$installCommand = @'
-umask 077
-mkdir -p ~/.ssh
-touch ~/.ssh/authorized_keys
-key=$(cat)
-grep -qxF "$key" ~/.ssh/authorized_keys || printf '%s\n' "$key" >> ~/.ssh/authorized_keys
-chmod 700 ~/.ssh
-chmod 600 ~/.ssh/authorized_keys
-'@
-$publicKey | & ssh "$PiUser@$PiAddress" $installCommand
+$publicKeyBytes = [Text.Encoding]::UTF8.GetBytes($publicKey)
+$publicKeyBase64 = [Convert]::ToBase64String($publicKeyBytes)
+
+# Keep the remote command on one LF-independent line. Passing a multiline
+# here-string through Windows OpenSSH can preserve CRLF and corrupt Linux shell
+# tokens on some PowerShell/OpenSSH combinations.
+$installCommand = @"
+umask 077; mkdir -p ~/.ssh; touch ~/.ssh/authorized_keys; printf '%s' '$publicKeyBase64' | base64 -d > ~/.ssh/.piper_operator_key.tmp; grep -qxFf ~/.ssh/.piper_operator_key.tmp ~/.ssh/authorized_keys || { cat ~/.ssh/.piper_operator_key.tmp >> ~/.ssh/authorized_keys; printf '\n' >> ~/.ssh/authorized_keys; }; rm -f ~/.ssh/.piper_operator_key.tmp; chmod 700 ~/.ssh; chmod 600 ~/.ssh/authorized_keys
+"@.Trim()
+
+& ssh -o PreferredAuthentications=publickey,password "$PiUser@$PiAddress" $installCommand
 if ($LASTEXITCODE -ne 0) {
     throw "Public-key installation failed with exit code $LASTEXITCODE"
 }
 
-Write-Host "Testing passwordless SSH ..."
-& ssh -o BatchMode=yes $Alias "hostname; whoami; uname -m"
+Write-Host "Testing the newly installed SSH key ..."
+& ssh -o BatchMode=yes -o IdentitiesOnly=yes -i $keyPath "$PiUser@$PiAddress" "hostname; whoami; uname -m"
 if ($LASTEXITCODE -ne 0) {
     throw "Passwordless SSH test failed with exit code $LASTEXITCODE"
+}
+Write-Host "Testing the saved SSH alias ..."
+& ssh -o BatchMode=yes $Alias "hostname; whoami; uname -m"
+if ($LASTEXITCODE -ne 0) {
+    throw "SSH alias test failed with exit code $LASTEXITCODE"
 }
 Write-Host "Passwordless SSH is ready. Reopen the Piper workbench."

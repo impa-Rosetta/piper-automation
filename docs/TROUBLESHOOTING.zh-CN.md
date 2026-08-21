@@ -29,6 +29,33 @@ hostname -I
 
 `Connection refused` 表示 IP 可达但 SSH 服务未监听；超时通常是 IP、网络隔离或防火墙问题。
 
+## 首次免密配置出现 `octal number out of range`
+
+如果同时出现公钥内容被 `grep` 当成文件名、最后提示 `Passwordless SSH test failed`，这是
+旧版配置脚本把 Windows `CRLF` 多行命令传给 Linux 后发生了解析错位，不是 CAN 或机械臂
+故障。更新 Windows 仓库后重新运行即可：
+
+```powershell
+cd <Windows上的piper-automation目录>
+git pull
+powershell -ExecutionPolicy Bypass -File .\scripts\configure_windows_workstation.ps1 `
+  -PiAddress <PI_IP> `
+  -PiUser piper `
+  -RemoteRoot /home/piper/piper_robot_project
+```
+
+若目录名类似 `piper-automation-main`，通常表示代码来自 GitHub ZIP 下载，目录中没有
+`.git`，因此不能执行 `git pull`。请重新下载最新 ZIP，或推荐改用：
+
+```powershell
+git clone https://github.com/impa-Rosetta/piper-automation.git
+cd piper-automation
+```
+
+新版使用单行 Base64 公钥传输，并强制使用本次生成的密钥做验证。成功时会依次显示
+`Testing the newly installed SSH key`、`Testing the saved SSH alias` 和
+`Passwordless SSH is ready`。此前失败的尝试不会影响 CAN、现场任务或机械臂配置。
+
 ## `can0` 不存在
 
 ```bash
