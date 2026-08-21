@@ -69,6 +69,7 @@ teach/production_tasks/layer_01_slot_01/
 轨迹恢复和验收步骤见：
 
 - [从零部署与交接教程](docs/GETTING_STARTED.zh-CN.md)
+- [AI 辅助同机树莓派交接手册](docs/AI_ASSISTED_HANDOVER.zh-CN.md)
 - [树莓派换热点与网络交接](docs/NETWORK_HANDOVER.zh-CN.md)
 - [纯轨迹方案现场操作手册](docs/FIELD_RUNBOOK.zh-CN.md)
 - [现场故障排查](docs/TROUBLESHOOTING.zh-CN.md)

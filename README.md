@@ -74,6 +74,7 @@ For a first installation or operator handoff, use the detailed field guides
 instead of relying on the abbreviated commands below:
 
 - [Zero-to-production handoff (Chinese)](docs/GETTING_STARTED.zh-CN.md)
+- [AI-assisted same-Pi handoff (Chinese)](docs/AI_ASSISTED_HANDOVER.zh-CN.md)
 - [Raspberry Pi network handoff (Chinese)](docs/NETWORK_HANDOVER.zh-CN.md)
 - [Trajectory-only field runbook (Chinese)](docs/FIELD_RUNBOOK.zh-CN.md)
 - [Troubleshooting (Chinese)](docs/TROUBLESHOOTING.zh-CN.md)
