@@ -153,6 +153,11 @@ class RemoteWorkbench(tk.Tk):
         self.anchor_speed = tk.IntVar(value=int(saved.get("anchor_speed", 30)))
         self.selected_task: str | None = None
         self.busy_count = 0
+        session_log_dir = PROJECT_ROOT / "records" / "workbench_logs"
+        session_log_dir.mkdir(parents=True, exist_ok=True)
+        self.session_log_path = session_log_dir / (
+            "windows_workbench_" + datetime.now().strftime("%Y%m%d_%H%M%S") + ".log"
+        )
 
         self.configure_style()
         self.build_ui()
@@ -161,6 +166,7 @@ class RemoteWorkbench(tk.Tk):
         self.log(
             "Windows 只负责操作与文件管理；CAN 和夹爪串口始终由树莓派控制。"
         )
+        self.log(f"本次工作台日志：{self.session_log_path}")
 
     def load_config(self) -> dict[str, object]:
         try:
@@ -288,6 +294,12 @@ class RemoteWorkbench(tk.Tk):
         top = ttk.Frame(log_panel, style="Panel.TFrame")
         top.pack(fill="x")
         ttk.Label(top, text="运行日志", style="Panel.TLabel").pack(side="left")
+        ttk.Button(
+            top,
+            text="打开日志文件夹",
+            style="Action.TButton",
+            command=self.open_log_folder,
+        ).pack(side="right", padx=(6, 0))
         ttk.Button(
             top, text="清空", command=lambda: self.log_box.delete("1.0", "end")
         ).pack(side="right")
@@ -759,8 +771,20 @@ class RemoteWorkbench(tk.Tk):
 
     def log(self, text: str) -> None:
         stamp = datetime.now().strftime("%H:%M:%S")
-        self.log_box.insert("end", f"[{stamp}] {text}\n")
+        line = f"[{stamp}] {text}\n"
+        self.log_box.insert("end", line)
         self.log_box.see("end")
+        try:
+            with self.session_log_path.open("a", encoding="utf-8") as stream:
+                stream.write(line)
+        except OSError:
+            pass
+
+    def open_log_folder(self) -> None:
+        try:
+            os.startfile(self.session_log_path.parent)  # type: ignore[attr-defined]
+        except OSError as exc:
+            messagebox.showerror("无法打开日志目录", str(exc))
 
     def set_busy(self, active: bool) -> None:
         self.busy_count += 1 if active else -1
