@@ -107,7 +107,7 @@ Windows 只需要 Python 3.10+、Tkinter 和系统 OpenSSH Client：
 1. 配置免密 SSH，并建立别名 `piper-pi`。
 2. 双击 `start_piper_windows_workbench.bat`。
 3. 填写树莓派项目目录并执行“连接与设备检查”。
-4. 在界面内同步程序，然后执行 A/B/C/D 录制验证流程。
+4. 接手已有树莓派时，先拉回现场数据，再同步程序并执行 A/B/C/D 录制验证流程。
 
 Windows 不需要安装 Piper SDK，也不直接控制 CAN。
 

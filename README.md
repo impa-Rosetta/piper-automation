@@ -113,7 +113,8 @@ Requirements: Python 3.10+, Tkinter, and Windows OpenSSH Client.
 1. Configure key-based SSH with the alias `piper-pi`.
 2. Double-click `start_piper_windows_workbench.bat`.
 3. Set the remote project path and click the device check.
-4. Use the GUI to synchronize code and manage the A/B/C/D workflow.
+4. When taking over an existing Pi, pull its site data before synchronizing code,
+   then use the A/B/C/D workflow.
 
 No Python robotics packages are required on Windows.
 

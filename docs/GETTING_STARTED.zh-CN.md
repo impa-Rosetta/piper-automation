@@ -147,6 +147,16 @@ ssh piper-pi "hostname; uname -m"
 ssh piper-pi
 ```
 
+如果使用本项目已经交付的同一块树莓派，项目已位于
+`/home/piper/piper_robot_project`，不要重复克隆，也不要在该目录执行 `git pull`。这块
+树莓派采用工作台归档同步方式部署，Git 信息不存在属于正常现象。代码更新流程是：
+
+1. 在 Windows 的 `piper-automation` 仓库执行 `git pull`；
+2. 打开工作台并先执行“从树莓派拉回现场数据”；
+3. 再执行“同步程序到树莓派”。
+
+只有全新树莓派才执行下面的首次安装命令：
+
 在树莓派执行：
 
 ```bash
