@@ -32,6 +32,7 @@ FEEDER_ABOVE = "teach/feeder_above.json"
 FULL_LOG_DIR = "records/full_status_logs"
 DIY_GRIPPER_STATE_FILE = "records/diy_gripper_state.json"
 TASK_FORMAT = "piper_field_task_v1"
+DEFAULT_PI_USER = "piper"
 CREATE_NEW_CONSOLE = getattr(subprocess, "CREATE_NEW_CONSOLE", 0)
 
 SYNC_ROOTS = (
@@ -765,7 +766,9 @@ class RemoteWorkbench(tk.Tk):
         value = self.host.get().strip()
         if not value:
             raise ValueError("SSH 主机不能为空")
-        return value
+        # OpenSSH otherwise falls back to the current Windows account name
+        # (for example, administrator), which is rarely the Raspberry Pi user.
+        return value if "@" in value else f"{DEFAULT_PI_USER}@{value}"
 
     def remote_project(self) -> str:
         value = self.remote_root.get().strip()

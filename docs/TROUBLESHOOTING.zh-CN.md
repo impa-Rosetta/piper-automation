@@ -4,6 +4,14 @@
 
 ## SSH 连接拒绝
 
+如果密码提示显示 `administrator@piper-pi`，Windows 当前账户被错误当成了树莓派账户。
+新版工作台在“SSH 主机”只填写 `piper-pi` 或 IP 时会自动使用 `piper`；其他 Linux
+账号请填写 `用户名@主机名或IP`。可先在 PowerShell 验证：
+
+```powershell
+ssh piper@piper-pi
+```
+
 Windows：
 
 ```powershell

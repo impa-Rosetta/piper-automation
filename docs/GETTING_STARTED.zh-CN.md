@@ -246,10 +246,15 @@ start_piper_windows_workbench.bat
 
 工作台连接参数建议：
 
-- 主机：`piper-pi`；
+- 主机：`piper-pi`（工作台会明确使用默认 Linux 用户 `piper`，等价于
+  `piper@piper-pi`）；如果树莓派使用其他账号，填写 `用户名@主机名或IP`；
 - 远程项目：`/home/<PI_USER>/piper-automation`；
 - CAN：`can0`；
 - 夹爪：`/dev/piper_gripper`。
+
+若终端出现 `administrator@piper-pi's password`，说明使用的是旧版工作台或旧配置：
+先更新项目，再重新打开工作台。正确提示应为 `piper@piper-pi's password`；这里要求
+输入的是树莓派 Linux 账号密码，不是热点密码。
 
 先点击“连接与设备检查”。检查通过后再进行：
 
